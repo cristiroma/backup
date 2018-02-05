@@ -4,6 +4,7 @@
 # 0  - Success
 # 40 - Generic RSYNC sync error
 # 41 - Failed to create remote directory
+# 42 - Failed to validate SSH connection
 
 . ./etc/rsync.config.sh
 # RSYNC_USER="root"
@@ -11,6 +12,16 @@
 
 RSYNC_DATE_START=$( date +%Y-%m-%d_%H-%M-%S )
 
+function rsyncPrerequisites() {
+	ssh ${RSYNC_USER}@${RSYNC_HOST} rm -rf ~/.test && touch ~/.test
+	if [ ! $? -eq 0 ]; then
+		echo "[CRITICAL][RSYNC]: Failed to validate remote connection: ${RSYNC_USER}@${RSYNC_HOST}";
+		exit 42
+	fi
+	return 0
+}
+
+# Receive backup path and try to sync
 function doBackupSinglePath() {
 	ret=0
 	src_path="$(cut -d':' -f1 <<< $1)"
@@ -27,15 +38,18 @@ function doBackupSinglePath() {
 	return ${ret}
 }
 
-
+# Parse backup-paths.txt and read the path to backup
 function doRsync() {
 	while IFS= read -r line; do
-		if [[ "${line}" != '#'* ]]; then
+		if [[ "${line}" != '#'* ]] && [ ! -z "${line}" ]; then
 			doBackupSinglePath "${line}";
 		else
-			echo "[WARN][RSYNC]: Ignoring commented backup path: ${line}";
+			if [ ! -z "${line}" ]; then
+				echo "[WARN][RSYNC]: Ignoring commented or empty backup path: ${line}";
+			fi
 		fi
 	done < ./etc/backup-paths.txt
 }
 
+rsyncPrerequisites;
 doRsync;
