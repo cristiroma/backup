@@ -6,7 +6,7 @@
 # 41 - Failed to create remote directory
 # 42 - Failed to validate SSH connection
 
-. ./etc/rsync.config.sh
+. ./etc/config.sh
 # RSYNC_USER="root"
 # RSYNC_HOST="sisif"
 
