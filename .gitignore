@@ -1,0 +1,3 @@
+etc/backup-excludes.txt
+etc/backup-paths.txt
+etc/rsync.config.sh
