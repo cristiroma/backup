@@ -7,7 +7,7 @@
 . ./etc/config.sh
 
 function mysqlPrerequisites() {
-	mysql -u root -p${MYSQL_PASSWORD} -e "USE mysql"
+	mysql --defaults-extra-file=./etc/my.cnf -e "USE mysql"
 	if [ $? -ne 0 ]; then
 		echo "[ERROR][MYSQL]: Failed to validate connection!";
 		return 32
@@ -19,10 +19,10 @@ function mysqlPrerequisites() {
 #
 function mysqlBackupDatabases() {
 	ret=0
-	for database in $(mysql -u root -B --disable-column-names -e "SHOW DATABASES"); do
+	for database in $(mysql --defaults-extra-file=./etc/my.cnf -B --disable-column-names -e "SHOW DATABASES"); do
 		if [ ${database} != "performance_schema" ] && [ ${database} != "information_schema" ]; then
 			dump_file="${MYSQL_DUMP_PATH}/${database}.sql.gz"
-			mysqldump -u root -p${MYSQL_PASSWORD} "${database}" | gzip > "${dump_file}"
+			mysqldump --defaults-extra-file=./etc/my.cnf "${database}" | gzip > "${dump_file}"
 			if [ $? -ne 0 ]; then
 				echo "[ERROR][MYSQL]: Failed to dump database ${database}, aborting!";
 				return 32
