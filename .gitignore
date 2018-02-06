@@ -1,3 +1,4 @@
 etc/backup-excludes.txt
 etc/backup-paths.txt
 etc/config.sh
+etc/my.cnf
